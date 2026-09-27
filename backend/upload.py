@@ -1,58 +1,24 @@
 import os
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
+import uuid
+from werkzeug.utils import secure_filename
 
 
+def save_uploaded_image(image, upload_folder):
 
-app = Flask(__name__)
-CORS(app)
-UPLOAD_FOLDER = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)),
-    "uploads"
-)
+    if image is None:
+        raise ValueError("No image provided.")
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({
-        "status": "success",
-        "message": "PicChart backend is running!"
-    })
-@app.route("/upload", methods=["POST"])
-def upload_image():
+    if image.filename == "":
+        raise ValueError("No image selected.")
 
-    try:       
-        image = request.files.get("image")
-        image_id, filename = save_uploaded_image(
-            image,
-            app.config["UPLOAD_FOLDER"]
-        )
+    filename = secure_filename(image.filename)
 
-        return jsonify({
-            "status": "success",
-            "message": "Image uploaded successfully.",
-            "image_id": image_id,
-            "filename": filename
-        }), 200
+    image_id = str(uuid.uuid4())
 
-    except ValueError as error:
+    saved_filename = f"{image_id}_{filename}"
 
-        return jsonify({
-            "status": "error",
-            "message": str(error)
-        }), 400
+    os.makedirs(upload_folder, exist_ok=True)
 
-    except Exception as error:
+    image.save(os.path.join(upload_folder, saved_filename))
 
-        print("UPLOAD ERROR:", error)
-
-        return jsonify({
-            "status": "error",
-            "message": "Something went wrong while uploading the image."
-        }), 500
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return image_id, saved_filename
