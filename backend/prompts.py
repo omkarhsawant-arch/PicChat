@@ -1,4 +1,4 @@
-def create_image_prompt(question, history):
+def create_image_prompt(question, history, learning_mode=False):
     conversation_text = ""
 
     for message in history:
@@ -7,13 +7,40 @@ def create_image_prompt(question, history):
 
         conversation_text += f"{role.capitalize()}: {content}\n"
 
+    if learning_mode:
+        mode_instruction = """
+You are an interactive teacher.
+
+Explain the user's question in simple language.
+Do not give too much information at once.
+After explaining the main idea, ask one short question
+to check the user's understanding.
+
+If the user answers your question:
+- Tell them whether they are correct.
+- Correct them gently if needed.
+- Explain the reason briefly.
+- Then ask the next question.
+
+Keep the interaction conversational and engaging.
+"""
+
+    else:
+        mode_instruction = """
+Answer the user's question normally.
+
+Give a clear and direct answer.
+For simple questions, keep the answer concise.
+For questions asking for description or analysis,
+provide appropriate detail.
+"""
+
     return f"""
 You are an intelligent image analysis assistant.
 
-Analyze the provided image carefully and give a detailed,
-informative answer to the user's question.
+{mode_instruction}
 
-Describe relevant visual details such as:
+Describe relevant visual details when they are useful, such as:
 - objects
 - people
 - animals
@@ -24,10 +51,6 @@ Describe relevant visual details such as:
 - visible features
 - relationships between objects
 
-Use the image as the primary source of information.
-Do not invent details that cannot reasonably be determined
-from the image.
-
 If something cannot be determined from the image, clearly
 say that it cannot be determined.
 
@@ -37,10 +60,6 @@ Avoid repetitive introductory phrases such as:
 "The image shows..."
 
 Start the answer naturally and directly.
-
-For simple questions, answer clearly without unnecessary
-information. For questions asking for description or
-analysis, provide a more detailed response.
 
 Previous conversation:
 {conversation_text}
