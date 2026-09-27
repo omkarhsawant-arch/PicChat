@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>PicChat — Image Recognition Assistant</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap"
+    rel="stylesheet"
+>
+
+<link rel="stylesheet" href="style.css">
+```
+
+</head>
+
+<body data-theme="light" data-mode="normal">
+
+```
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-top">
+
+        <button
+            class="icon-btn"
+            id="sidebarToggle"
+            title="Toggle sidebar"
+            aria-label="Toggle sidebar">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M3 6h18M3 12h18M3 18h18"/>
+            </svg>
+
+        </button>
+
+        <span class="brand">
+
+            <svg class="brand-icon" viewBox="0 0 24 24">
+                <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+            </svg>
+
+            <span class="brand-text">PicChat</span>
+
+        </span>
+
+    </div>
+
+
+    <!-- New chat -->
+
+    <button class="new-chat-btn" id="newChatBtn">
+
+        <svg viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14"/>
+        </svg>
+
+        <span>New chat</span>
+
+    </button>
+
+
+    <!-- Chat history -->
+
+    <div class="history-label">
+        Recent
+    </div>
+
+    <nav
+        class="history-list"
+        id="historyList"
+        aria-label="Chat history">
+
+        <!-- JavaScript will insert chats here -->
+
+    </nav>
+
+
+    <!-- Sidebar controls -->
+
+    <div class="sidebar-bottom">
+
+        <!-- Dark mode -->
+
+        <div class="toggle-row">
+
+            <span class="toggle-label">
+
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+                </svg>
+
+                Dark mode
+
+            </span>
+
+            <button
+                class="switch"
+                id="darkModeToggle"
+                role="switch"
+                aria-checked="false"
+                aria-label="Toggle dark mode">
+
+                <span class="switch-knob"></span>
+
+            </button>
+
+        </div>
+
+
+        <!-- Learning mode -->
+
+        <div class="toggle-row">
+
+            <span class="toggle-label">
+
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/>
+                </svg>
+
+                Learning mode
+
+            </span>
+
+            <button
+                class="switch"
+                id="learningModeToggle"
+                role="switch"
+                aria-checked="false"
+                aria-label="Toggle learning mode">
+
+                <span class="switch-knob"></span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</aside>
+
+
+<!-- ================= MAIN CHAT ================= -->
+
+<main class="main" id="mainChat">
+
+    <header class="topbar">
+
+        <button
+            class="icon-btn mobile-only"
+            id="mobileSidebarToggle"
+            aria-label="Open sidebar">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M3 6h18M3 12h18M3 18h18"/>
+            </svg>
+
+        </button>
+
+
+        <!-- Current chat title -->
+
+        <h1 class="chat-title" id="chatTitle">
+            New chat
+        </h1>
+
+
+        <div
+            class="mode-pill"
+            id="modePill">
+
+            Normal mode
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= CHAT WINDOW ================= -->
+
+    <section
+        class="chat-window"
+        id="chatWindow"
+        data-chat-id="">
+
+
+        <!-- Welcome screen -->
+
+        <div
+            class="welcome"
+            id="welcomeScreen">
+
+            <div class="welcome-icon">
+
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+                </svg>
+
+            </div>
+
+
+            <h2>
+                What can I help you see today?
+            </h2>
+
+
+            <p>
+                Upload an image and ask me anything about it —
+                objects, text, scenes, or details.
+            </p>
+
+
+            <!-- Suggested questions -->
+
+            <div class="suggestion-grid">
+
+                <button
+                    class="suggestion-card"
+                    data-suggestion="What's in this image?">
+
+                    <span>
+                        What's in this image?
+                    </span>
+
+                </button>
+
+
+                <button
+                    class="suggestion-card"
+                    data-suggestion="Read any text you see in the picture">
+
+                    <span>
+                        Read the text in this picture
+                    </span>
+
+                </button>
+
+
+                <button
+                    class="suggestion-card"
+                    data-suggestion="Identify the objects and their colors">
+
+                    <span>
+                        Identify objects &amp; colors
+                    </span>
+
+                </button>
+
+
+                <button
+                    class="suggestion-card"
+                    data-suggestion="Describe this scene in detail">
+
+                    <span>
+                        Describe this scene in detail
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Messages inserted by scripts.js -->
+
+        <div
+            class="messages"
+            id="messages">
+        </div>
+
+    </section>
+
+
+    <!-- ================= IMAGE PREVIEW ================= -->
+
+    <div
+        class="image-preview-strip"
+        id="imagePreviewStrip"
+        hidden>
+
+        <div
+            class="preview-thumb"
+            id="previewThumb">
+
+            <img
+                id="previewImg"
+                src=""
+                alt="Selected image preview">
+
+
+            <button
+                class="preview-remove"
+                id="previewRemove"
+                aria-label="Remove image">
+
+                &times;
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= MESSAGE COMPOSER ================= -->
+
+    <form
+        class="composer"
+        id="composerForm">
+
+        <!-- Image attachment -->
+
+        <button
+            type="button"
+            class="icon-btn composer-btn"
+            id="attachBtn"
+            title="Add image"
+            aria-label="Add image">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M21 15V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm13 9-6.5-6.5L11 16l-3-3L3 20"/>
+            </svg>
+
+        </button>
+
+
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+            hidden>
+
+
+        <!-- Question -->
+
+        <input
+            type="text"
+            id="messageInput"
+            class="composer-input"
+            placeholder="Ask about an image or type a message..."
+            autocomplete="off">
+
+
+        <!-- Send -->
+
+        <button
+            type="submit"
+            class="icon-btn send-btn"
+            id="sendBtn"
+            title="Send"
+            aria-label="Send message">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M3 20l18-8L3 4v6l12 2-12 2z"/>
+            </svg>
+
+        </button>
+
+    </form>
+
+
+    <p class="disclaimer">
+        PicChat can analyze images you upload.
+        Responses may be inaccurate — verify important details.
+    </p>
+
+</main>
+
+
+<!-- Your project uses scripts.js -->
+
+<script src="scripts.js"></script>
+```
+
+</body>
+
+</html>
