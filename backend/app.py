@@ -20,16 +20,12 @@ app = Flask(__name__)
 CORS(app)
 
 
-# -----------------------------
-# Database setup
-# -----------------------------
+
 
 create_tables()
 
 
-# -----------------------------
-# Upload folder
-# -----------------------------
+
 
 UPLOAD_FOLDER = os.path.join(
     os.path.dirname(os.path.dirname(__file__)),
@@ -83,9 +79,7 @@ def new_chat():
         }), 500
 
 
-# -----------------------------
-# Get all saved chats
-# -----------------------------
+
 
 @app.route("/chats", methods=["GET"])
 def chats():
@@ -118,10 +112,6 @@ def chats():
             "message": "Could not retrieve chats."
         }), 500
 
-
-# -----------------------------
-# Get messages of one chat
-# -----------------------------
 
 @app.route("/chats/<int:chat_id>", methods=["GET"])
 def get_chat(chat_id):
@@ -233,9 +223,6 @@ def update_title(chat_id):
         }), 500
 
 
-# -----------------------------
-# Upload image
-# -----------------------------
 
 @app.route("/upload", methods=["POST"])
 def upload_image():
@@ -273,9 +260,7 @@ def upload_image():
         }), 500
 
 
-# -----------------------------
-# Ask Gemini
-# -----------------------------
+
 
 @app.route("/ask", methods=["POST"])
 def ask():
@@ -340,10 +325,6 @@ def ask():
             "message": str(error)
         }), 500
 
-
-# -----------------------------
-# Run Flask
-# -----------------------------
 
 if __name__ == "__main__":
     app.run(debug=True)
