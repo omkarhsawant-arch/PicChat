@@ -3,8 +3,8 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from upload import save_uploaded_image
-from ai_api import ask_gemini
+from backend.upload import save_uploaded_image
+from backend.ai_api import ask_gemini
 app = Flask(__name__)
 
 CORS(app)
