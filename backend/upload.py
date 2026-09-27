@@ -3,6 +3,9 @@ import uuid
 from werkzeug.utils import secure_filename
 
 
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+
 def save_uploaded_image(image, upload_folder):
 
     if image is None:
@@ -12,6 +15,16 @@ def save_uploaded_image(image, upload_folder):
         raise ValueError("No image selected.")
 
     filename = secure_filename(image.filename)
+
+    if not filename or "." not in filename:
+        raise ValueError("Image must have a valid filename.")
+
+    extension = filename.rsplit(".", 1)[1].lower()
+    if extension not in ALLOWED_EXTENSIONS:
+        raise ValueError("Only PNG, JPG, JPEG, GIF, and WEBP images are supported.")
+
+    if image.mimetype and not image.mimetype.startswith("image/"):
+        raise ValueError("The uploaded file must be an image.")
 
     image_id = str(uuid.uuid4())
 

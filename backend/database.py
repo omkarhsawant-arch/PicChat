@@ -1,10 +1,16 @@
+import os
 import sqlite3
 
-DATABASE = "chats.db"
+DATABASE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "chats.db"
+)
 
 
 def get_connection():
-    return sqlite3.connect(DATABASE)
+    connection = sqlite3.connect(DATABASE)
+    connection.execute("PRAGMA foreign_keys = ON")
+    return connection
 
 
 def create_tables():

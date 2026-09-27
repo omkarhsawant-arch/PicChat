@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:5000";
+// The frontend is served by Flask, so API requests work on localhost and after deployment.
+const API_URL = window.location.origin;
 
 /* ---------- State ---------- */
 

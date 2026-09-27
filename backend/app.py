@@ -1,10 +1,9 @@
 import os
 
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from backend.upload import save_uploaded_image
-from backend.ai_api import ask_gemini
 from backend.database import (
     create_tables,
     create_chat,
@@ -15,7 +14,15 @@ from backend.database import (
     update_chat_title
 )
 
-app = Flask(__name__)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_FOLDER = os.path.join(PROJECT_ROOT, "frontend")
+UPLOAD_FOLDER = os.path.join(PROJECT_ROOT, "uploads")
+
+app = Flask(__name__, static_folder=FRONTEND_FOLDER, static_url_path="")
+app.config.update(
+    UPLOAD_FOLDER=UPLOAD_FOLDER,
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024,
+)
 
 CORS(app)
 
@@ -25,14 +32,27 @@ CORS(app)
 create_tables()
 
 
+def error_response(message, status_code):
+    return jsonify({"status": "error", "message": message}), status_code
 
 
-UPLOAD_FOLDER = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)),
-    "uploads"
-)
+@app.errorhandler(413)
+def request_too_large(_error):
+    return error_response("Image must be 16 MB or smaller.", 413)
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# -----------------------------
+# Frontend and uploaded files
+# -----------------------------
+
+@app.route("/", methods=["GET"])
+def frontend():
+    return send_from_directory(FRONTEND_FOLDER, "index.html")
+
+
+@app.route("/uploads/<path:filename>", methods=["GET"])
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 
 # -----------------------------
@@ -57,9 +77,10 @@ def new_chat():
 
     try:
 
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
 
-        title = data.get("title", "New Chat")
+        title = str(data.get("title", "New Chat")).strip() or "New Chat"
+        title = title[:120]
 
         chat_id = create_chat(title)
 
@@ -193,9 +214,9 @@ def update_title(chat_id):
                 "message": "Chat not found."
             }), 404
 
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
 
-        title = data.get("title")
+        title = str(data.get("title", "")).strip()
 
         if not title:
 
@@ -204,13 +225,13 @@ def update_title(chat_id):
                 "message": "Title is required."
             }), 400
 
-        update_chat_title(chat_id, title)
+        update_chat_title(chat_id, title[:120])
 
         return jsonify({
             "status": "success",
             "message": "Chat title updated successfully.",
             "chat_id": chat_id,
-            "title": title
+            "title": title[:120]
         }), 200
 
     except Exception as error:
@@ -267,7 +288,7 @@ def ask():
 
     try:
 
-        question = request.form.get("question")
+        question = (request.form.get("question") or "").strip()
         chat_id = request.form.get("chat_id")
         learning_mode = request.form.get("learning_mode") == "true"
 
@@ -285,7 +306,13 @@ def ask():
                 "message": "Chat ID is required."
             }), 400
 
-        chat_id = int(chat_id)
+        try:
+            chat_id = int(chat_id)
+        except (TypeError, ValueError):
+            return error_response("Chat ID must be a number.", 400)
+
+        if not chat_exists(chat_id):
+            return error_response("Chat not found.", 404)
 
         image = request.files.get("image")
 
@@ -302,6 +329,10 @@ def ask():
                 app.config["UPLOAD_FOLDER"],
                 filename
             )
+
+        # Import lazily so chat management and the frontend remain available
+        # even when the optional AI SDK has not been installed yet.
+        from backend.ai_api import ask_gemini
 
         answer = ask_gemini(
             chat_id,
