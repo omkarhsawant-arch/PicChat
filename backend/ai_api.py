@@ -1,19 +1,34 @@
-import mimetypes
 from google import genai
 from google.genai import types
+
 from backend.config import GEMINI_API_KEY
 from backend.prompts import create_image_prompt
-from backend.conversation import add_message,get_history
+from backend.conversation import add_message, get_history
 
-client=genai.Client(api_key=GEMINI_API_KEY)
+import mimetypes
 
-def ask_gemini(question, image_path=None,learning_mode=False):
 
-    history = get_history()
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-    prompt = create_image_prompt(question, history,learning_mode)
+
+def ask_gemini(
+    chat_id,
+    question,
+    image_path=None,
+    learning_mode=False
+):
+
+    # Get history for this specific chat
+    history = get_history(chat_id)
+
+    prompt = create_image_prompt(
+        question,
+        history,
+        learning_mode
+    )
 
     if image_path:
+
         with open(image_path, "rb") as f:
             image_bytes = f.read()
 
@@ -28,12 +43,13 @@ def ask_gemini(question, image_path=None,learning_mode=False):
                 prompt,
                 types.Part.from_bytes(
                     data=image_bytes,
-                    mime_type="mime_type"
+                    mime_type=mime_type
                 )
             ]
         )
 
     else:
+
         response = client.models.generate_content(
             model="gemini-3.5-flash-lite",
             contents=prompt
@@ -41,7 +57,8 @@ def ask_gemini(question, image_path=None,learning_mode=False):
 
     answer = response.text
 
-    add_message("user", question)
-    add_message("assistant", answer)
+    # Save the conversation to the current chat
+    add_message(chat_id, "user", question)
+    add_message(chat_id, "assistant", answer)
 
     return answer
