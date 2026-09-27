@@ -7,11 +7,11 @@ from backend.conversation import add_message,get_history
 
 client=genai.Client(api_key=GEMINI_API_KEY)
 
-def ask_gemini(question, image_path=None):
+def ask_gemini(question, image_path=None,learning_mode=False):
 
     history = get_history()
 
-    prompt = create_image_prompt(question, history)
+    prompt = create_image_prompt(question, history,learning_mode)
 
     if image_path:
         with open(image_path, "rb") as f:

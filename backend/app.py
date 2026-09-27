@@ -68,6 +68,7 @@ def ask():
 
     try:
         question = request.form.get("question")
+        learning_mode = request.form.get("learning_mode") == "true"
 
         if not question:
             return jsonify({
@@ -92,7 +93,8 @@ def ask():
 
         answer = ask_gemini(
             question,
-            image_path
+            image_path,
+            learning_mode
         )
 
         return jsonify({
