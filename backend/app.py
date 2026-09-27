@@ -4,8 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 from upload import save_uploaded_image
-
-
+from ai_api import ask_gemini
 app = Flask(__name__)
 
 CORS(app)
@@ -64,6 +63,50 @@ def upload_image():
             "message": "Something went wrong while uploading the image."
         }), 500
 
+@app.route("/ask", methods=["POST"])
+def ask():
 
+    try:
+        question = request.form.get("question")
+
+        if not question:
+            return jsonify({
+                "status": "error",
+                "message": "Question is required"
+            }), 400
+
+        image = request.files.get("image")
+
+        image_path = None
+
+        if image:
+            image_id, filename = save_uploaded_image(
+                image,
+                app.config["UPLOAD_FOLDER"]
+            )
+
+            image_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
+        answer = ask_gemini(
+            question,
+            image_path
+        )
+
+        return jsonify({
+            "status": "success",
+            "answer": answer
+        }), 200
+
+    except Exception as error:
+
+        print("ASK ERROR:", error)
+
+        return jsonify({
+            "status": "error",
+            "message": str(error)
+        }), 500
 if __name__ == "__main__":
     app.run(debug=True)
